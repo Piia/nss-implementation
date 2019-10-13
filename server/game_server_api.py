@@ -1,24 +1,32 @@
 __author__ = 'Piia Hartikka 013866037'
 
 import web
-
+import json
 
 class GameServerApi(web.application):
     
-    def __init__(self, game_state):
+    def __init__(self, game_state, capacity):
+        self.capacity = capacity
         self.game_state = game_state
         parent = self
 
         urls = (
-            '/clients/(.+)', 'clients'
+            '/clients/(.+)', 'clients',
+            '/stats', 'stats',
         )
 
         class clients:
             def DELETE(self, address):
                 parent._delete_client(address)
                 return web.NoContent()
+
+        class stats:
+            def GET(self):
+                message = { 'capacity': parent.capacity, 'count': len(parent.game_state) }
+                web.header('Content-Type', 'application/json')
+                return json.dumps(message)
         
-        super().__init__(urls, {'clients': clients})
+        super().__init__(urls, {'clients': clients, 'stats': stats})
 
     def run(self, port=8080, *middleware):
         func = self.wsgifunc(*middleware)

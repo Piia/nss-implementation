@@ -4,7 +4,9 @@ import pygame
 from pygame.locals import *
 import sys
 from queue import Empty
+from datetime import datetime
 
+HEARTBEAT_INTERVAL = 5
 
 class Game(object):
     def __init__(self, server_message_queue, command_queue):
@@ -20,6 +22,7 @@ class Game(object):
         self.BLOCK = 10
         self.x = 200
         self.y = 200
+        self.last_sent = datetime.now()
 
         self.game_state = []
 
@@ -34,6 +37,7 @@ class Game(object):
 
         while running:
             self.clock.tick(60)
+            self.send_heartbeat()
             self.update_game_state()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -52,6 +56,12 @@ class Game(object):
                     self.write_command()
             self.draw()
             pygame.display.update()
+
+    def send_heartbeat(self):
+        now = datetime.now()
+        if (now - self.last_sent).total_seconds() > HEARTBEAT_INTERVAL:
+            print("Sending heartbeat")
+            self.write_command()
 
     def draw(self):
         self.screen.fill(self.WHITE)
@@ -77,4 +87,5 @@ class Game(object):
             self.game_state = last_game_state
 
     def write_command(self):
+        self.last_sent = datetime.now()
         self.command_queue.put((self.x, self.y))
