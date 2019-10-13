@@ -17,9 +17,7 @@ class ReceiverThread(threading.Thread):
     def __init__(self, address, game_state, heartbeats):
         self.address = address
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        print(f"address: {self.address}")
         self.socket.bind(self.address)
-        print("socket bound")
         self.game_state = game_state
         self.heartbeats = heartbeats
         threading.Thread.__init__(self)

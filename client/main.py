@@ -4,8 +4,6 @@ import client
 import game
 import requests
 
-#GAME_SERVER_ADDRESS = ('localhost', 15000)
-
 MAIN_SERVER_ADDRESS = ('localhost', 8080)
 
 def join_game():
