@@ -1,25 +1,19 @@
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
-import os
+import argparse
 
-FTP_PORT = 2222
-FTP_USER = 'gamer'
-FTP_PASSWORD = 'gamer_password'
-FTP_DIRECTORY = f'{os.getcwd()}/assets'
 
-# FROM: https://serverpilot.io/docs/how-to-run-a-simple-ftp-server
-
-def main():
+def main(args):
     authorizer = DummyAuthorizer()
     # list+retrieve permissions
-    authorizer.add_user(FTP_USER, FTP_PASSWORD, FTP_DIRECTORY, perm='lr')
+    authorizer.add_user(args.user, args.password, args.directory, perm='lr')
 
     handler = FTPHandler
     handler.authorizer = authorizer
     handler.banner = "content_delivery_server is ready"
 
-    address = ('', FTP_PORT)
+    address = ('', args.port)
     server = FTPServer(address, handler)
 
     server.max_cons = 256
@@ -29,4 +23,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("port", type=int, help="Port that the content delivery server api will listen")
+    parser.add_argument("user", help="Ftp username")
+    parser.add_argument("password", help="Ftp user password")
+    parser.add_argument("directory", help="Directory that contains the files for the ftp server")
+    args = parser.parse_args()
+    main(args)

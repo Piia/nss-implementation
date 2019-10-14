@@ -5,16 +5,21 @@ import json
 import subprocess
 import requests
 import atexit
+import os
 
 GAME_SERVER_API_PORT_RANGE_START = 10000
 GAME_SERVER_RECEIVER_PORT_RANGE_START = 15000
 
-CONTENT_DISTRIBUTION_SERVER_PORT = 2222
-CONTENT_DISTRIBUTION_FILES = ['background_image.png']
+ASSET_FILES = ['background_image.png']
+FTP_PORT = 2222
+FTP_USER = 'gamer'
+FTP_PASSWORD = 'gamer_password'
+FTP_DIRECTORY = f'{os.getcwd()}/assets'
+
 
 class MainServerApi(web.application):
     def __init__(self):
-        self.game_server_processes = []
+        self.server_processes = []
         self.game_servers = []
         self.next_game_server_api_port = GAME_SERVER_API_PORT_RANGE_START
         self.next_game_server_receiver_port = GAME_SERVER_RECEIVER_PORT_RANGE_START
@@ -30,11 +35,15 @@ class MainServerApi(web.application):
                 _api_port, receiver_port = parent._find_game_server()
                 message = {
                     'game_address': f'localhost:{receiver_port}',
-                    'file_address': f'localhost:{CONTENT_DISTRIBUTION_SERVER_PORT}',
-                    'files': CONTENT_DISTRIBUTION_FILES,
+                    'file_address': f'localhost:{FTP_PORT}',
+                    'files': ASSET_FILES,
+                    'ftp_user': FTP_USER,
+                    'ftp_password': FTP_PASSWORD,
                 }
                 web.header('Content-Type', 'application/json')
                 return json.dumps(message)
+
+        self._start_content_delivery_server()
         
         super().__init__(urls, {'join': join})
 
@@ -42,12 +51,22 @@ class MainServerApi(web.application):
         func = self.wsgifunc(*middleware)
         return web.httpserver.runsimple(func, ('localhost', port))
 
+    def _start_content_delivery_server(self):
+        self.server_processes.append(subprocess.Popen([
+            'python3',
+            'content_delivery_server.py',
+            str(FTP_PORT),
+            FTP_USER,
+            FTP_PASSWORD,
+            FTP_DIRECTORY
+        ]))
+
     def _start_new_game_server(self):
         api_port = self.next_game_server_api_port
         self.next_game_server_api_port += 1
         receiver_port = self.next_game_server_receiver_port
         self.next_game_server_receiver_port += 1
-        self.game_server_processes.append(
+        self.server_processes.append(
             subprocess.Popen(['python3', 'game_server.py', str(api_port), str(receiver_port)])
         )
         self.game_servers.append((api_port, receiver_port))
@@ -65,7 +84,7 @@ class MainServerApi(web.application):
 
 
     def _stop_child_processes(self):
-        for process in self.game_server_processes:
+        for process in self.server_processes:
             process.terminate()
 
 def main():

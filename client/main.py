@@ -26,7 +26,7 @@ def download_files(configuration):
     host, port = extract_address(configuration, 'file_address')
     ftp = FTP()
     ftp.connect(host=host, port=port)
-    ftp.login(user='gamer', passwd='gamer_password')
+    ftp.login(user=configuration['ftp_user'], passwd=configuration['ftp_password'])
     print(ftp.getwelcome())
 
     for filename in configuration['files']:
