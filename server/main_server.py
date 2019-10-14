@@ -9,6 +9,9 @@ import atexit
 GAME_SERVER_API_PORT_RANGE_START = 10000
 GAME_SERVER_RECEIVER_PORT_RANGE_START = 15000
 
+CONTENT_DISTRIBUTION_SERVER_PORT = 2222
+CONTENT_DISTRIBUTION_FILES = ['background_image.png']
+
 class MainServerApi(web.application):
     def __init__(self):
         self.game_server_processes = []
@@ -24,8 +27,12 @@ class MainServerApi(web.application):
 
         class join:
             def POST(self):
-                api_port, receiver_port = parent._find_game_server()
-                message = {'game_address': f'localhost:{receiver_port}'}
+                _api_port, receiver_port = parent._find_game_server()
+                message = {
+                    'game_address': f'localhost:{receiver_port}',
+                    'file_address': f'localhost:{CONTENT_DISTRIBUTION_SERVER_PORT}',
+                    'files': CONTENT_DISTRIBUTION_FILES,
+                }
                 web.header('Content-Type', 'application/json')
                 return json.dumps(message)
         

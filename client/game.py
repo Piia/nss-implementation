@@ -5,6 +5,7 @@ from pygame.locals import *
 import sys
 from queue import Empty
 from datetime import datetime
+import pathlib
 
 HEARTBEAT_INTERVAL = 5
 
@@ -18,6 +19,7 @@ class Game(object):
         self.WHITE = (255, 255, 255)
         self.BLUE = (0, 0, 255)
         self.GREEN = (0, 255, 0)
+        self.background = pygame.image.load('assets/background_image.png')
 
         self.BLOCK = 10
         self.x = 200
@@ -33,15 +35,14 @@ class Game(object):
         self.clock = pygame.time.Clock()
 
     def start(self):
-        running = True
-
-        while running:
+        while True:
             self.clock.tick(60)
             self.send_heartbeat()
             self.update_game_state()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    pygame.quit()
+                    return
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.locals.K_UP:
                         self.y -= self.BLOCK
@@ -64,7 +65,8 @@ class Game(object):
             self.write_command()
 
     def draw(self):
-        self.screen.fill(self.WHITE)
+        #self.screen.fill(self.WHITE)
+        self.screen.blit(self.background, (0,0))
         for coords in self.game_state:
             rectangle = pygame.Rect(coords, (self.BLOCK, self.BLOCK))
             pygame.draw.rect(self.screen, self.GREEN, rectangle)

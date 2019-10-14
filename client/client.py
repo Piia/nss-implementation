@@ -13,6 +13,7 @@ class ReceiverThread(threading.Thread):
         self.socket = socket
         self.inbound_queue = inbound_queue
         threading.Thread.__init__(self)
+        self.daemon = True
     
     def run(self):
         while True:
@@ -46,6 +47,7 @@ class SenderThread(threading.Thread):
         self.game_server_address = game_server_address
         self.outbound_queue = outbound_queue
         threading.Thread.__init__(self)
+        self.daemon = True
 
     def run(self):
         while True:
