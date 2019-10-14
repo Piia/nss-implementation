@@ -86,10 +86,3 @@ class MainServerApi(web.application):
     def _stop_child_processes(self):
         for process in self.server_processes:
             process.terminate()
-
-def main():
-    main_server = MainServerApi()
-    main_server.run()
-
-if __name__ == '__main__':
-    main()
